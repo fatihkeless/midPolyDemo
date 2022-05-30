@@ -10,6 +10,9 @@ public class GameManager : MonoBehaviour
 
     public static GameManager instance = null;
     public FollowLine robot = null;
+    [SerializeField] public static GameObject[] garbageControl;
+    [SerializeField] public static GameObject[] garbage;
+
 
 
 
@@ -21,12 +24,12 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        garbage = GameObject.FindGameObjectsWithTag("Garbage");
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        garbageControl = GameObject.FindGameObjectsWithTag("Garbage");
     }
 }

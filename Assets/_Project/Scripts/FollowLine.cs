@@ -1,27 +1,45 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class FollowLine : MonoBehaviour
 {
     public ParticleSystem RobotRadius;
+    public ParticleSystem RobotExp;
+    public GameObject robot;
     
     public float minDistanceFollow = 0.1f;
     private float distance = 0;
+    
 
     public Transform robotTransform = null;
     
     private Vector3 pos;
     public float speed = 7.5f;
 
+    public static bool gameOver;
+    public static bool vibration;
+
     private void Start()
     {
+        gameOver = false;
+        vibration = true;
         radiusPlay();
+    }
+    private void Update()
+    {
+
     }
 
     public void radiusPlay()
     {
-        RobotRadius.Play();
+        if (!gameOver) 
+        { 
+        
+            RobotRadius.Play();
+
+        }
     }
 
     // delayMoLine iþlemini yaparken diðer bir listenin uzantýsýna atlamada bekleme yapmamasý için kullanýyoruz
@@ -31,6 +49,46 @@ public class FollowLine : MonoBehaviour
         StartCoroutine(delayMoveLine(list,time));
     }
 
+    //oyunu durdurmak için
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Room")
+        {
+            gameOver = true;
+            RobotExp.Play();
+            Destroy(robot, 1f);
+            if (vibration)
+            {
+                StartCoroutine(vibrationPhone());
+            }
+
+        }
+
+        if (other.gameObject.CompareTag("Garbage"))
+        {
+            Destroy(other.gameObject);
+            PauseManager.starsDelete++;
+           // Debug.Log(PauseManager.starsDelete);
+            if (vibration)
+            {
+                StartCoroutine(vibrationPhone());
+            }
+            
+        }
+
+
+    }
+
+    IEnumerator vibrationPhone()
+    {
+        long[] x = {15};
+        Vibration.Vibrate(x, 1);
+        yield return new WaitForSecondsRealtime(0.3f);
+        Vibration.Cancel();
+
+    }
+
+
 
     IEnumerator delayMoveLine(List<Vector3> List, float time)
     {
@@ -39,18 +97,20 @@ public class FollowLine : MonoBehaviour
         for(int i = 0; i < List.Count; i++)
         {
 
+            
+
             // robotSübürge ile çizdiðimiz çizgideki kordinatlarýn arasýný hesaplýyoruz
             // robot We calculate the distance between the coordinates on the line we drew with
 
             distance = Vector3.Distance(robotTransform.transform.position, List[i]);
 
-            
 
-            while (distance > minDistanceFollow)
+            while (distance > minDistanceFollow && !gameOver)
             {
                 //haraket noktasýný ayarlýyoruz
                 //we set the departure point
                 pos =  Vector3.MoveTowards(robotTransform.transform.position, List[i], speed * Time.deltaTime);
+
 
                 // rotasyon ayarýný yapýyoruz
                 // we set the rotation
@@ -65,9 +125,15 @@ public class FollowLine : MonoBehaviour
                 distance = Vector3.Distance(robotTransform.transform.position, List[i]);
                 // ilk update fonksiyonu çalýþtýðý anda çalýþmasýný saðlýyoruz
                 // We make it work as soon as the first update function runs
+                
                 yield return null;
 
             }
+
+
+            
+            
+
 
         }
     }

@@ -7,7 +7,9 @@ public class DrawLines : MonoBehaviour
 
     public Camera cam;
     public LineRenderer lineRenderer = null;
-    
+    private bool firstDraw;
+    public int lastPos;
+    public Transform robot;
 
 
     //kullanacaðýmýz deðiþkenleri tanýmlayalým
@@ -16,6 +18,7 @@ public class DrawLines : MonoBehaviour
     private Vector3 mousePos;
     private Vector3 pos;
     private Vector3 prePos;
+    private Vector3 lastPosVector3;
 
 
 
@@ -28,13 +31,36 @@ public class DrawLines : MonoBehaviour
     public float minDistance = 0.1f;
     private float distance = 0;
 
-
+    private void Start()
+    {
+        firstDraw = true;
+    }
     void Update()
     {
+        
+        if (firstDraw)
+        {
             drawing();
-           
+        }
+        
+        if (FollowLine.gameOver)
+        {
+            linePositions.Clear();
+            lineRenderer.SetPositions(linePositions.ToArray());
+        }
+        
 
-
+        if(!firstDraw)
+        {
+            lastPos = linePositions.Count;
+            Debug.Log(Vector3.Distance(robot.position, linePositions[lastPos -1]));
+            if(Vector3.Distance(robot.position , linePositions[lastPos -1]) < 0.5f)
+            {
+                FollowLine.gameOver = true;
+            }
+            
+        }
+        
     }
 
     private void drawing()
@@ -90,6 +116,9 @@ public class DrawLines : MonoBehaviour
                 if (Input.GetMouseButtonUp(0))
                 {
                     GameManager.instance.robot.moveToLine(linePositions, 0);
+                    firstDraw = false;
+
+
                 }
             }
         }
@@ -98,9 +127,16 @@ public class DrawLines : MonoBehaviour
 
 
 
-    }
 
+
+
+
+    }
     
+
+
+
+
 }
 
     
